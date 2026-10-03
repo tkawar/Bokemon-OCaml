@@ -49,48 +49,32 @@ let () =
   in
 
   Printf.printf
-    "Trainer: %s\n"
-    player.Player.name;
-
-  Printf.printf
-    "Starting B-Bucks: %d\n"
+    "Starting B-Bucks: %d\n\n"
     player.Player.bbucks;
 
-  let player =
-    Player.spend_bbucks player 10
+  let player, aquaphin_after, amount =
+    Battle.perform_attack
+      player
+      flarecub
+      aquaphin
+      Battle.Pay2Win
   in
 
   Printf.printf
-    "After normal attack: %d B-Bucks\n"
-    player.Player.bbucks;
-
-  let player =
-    Player.add_bbucks player 1000
-  in
+    "%s uses Pay2Win against %s.\n"
+    flarecub.name
+    aquaphin.name;
 
   Printf.printf
-    "After victory reward: %d B-Bucks\n"
-    player.Player.bbucks;
-
-  let player =
-    Player.add_win player
-  in
+    "Damage dealt: %d\n"
+    amount;
 
   Printf.printf
-    "Wins: %d\n"
-    player.Player.wins
+    "%s HP: %d/%d\n"
+    aquaphin_after.name
+    aquaphin_after.hp
+    aquaphin_after.max_hp;
 
-
-let () =
-  let poor_player =
-    Player.create_player "Test" starting_team
-  in
-
-  try
-    let _ =
-      Player.spend_bbucks poor_player 200
-    in
-    print_endline "Purchase succeeded."
-  with
-  | Player.BuyMoreBBucks ->
-      print_endline "Not enough B-Bucks!"
+  Printf.printf
+    "B-Bucks remaining: %d\n"
+    player.Player.bbucks
