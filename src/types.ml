@@ -15,6 +15,8 @@ type bmon = {
   max_hp : int;
   strength : int;
   defense : int;
+  level : int;
+  xp : int;
 }
 
 let string_of_bty ty =
