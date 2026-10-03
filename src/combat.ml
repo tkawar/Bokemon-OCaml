@@ -12,11 +12,7 @@ let effectiveness attacker defender =
 
   | _ -> NVE
 
-let damage attacker defender =
-  let rating =
-    effectiveness attacker.ty defender.ty
-  in
-
+let damage_with_rating attacker defender rating =
   let modified_strength =
     match rating with
     | SE -> attacker.strength * 2
@@ -32,6 +28,13 @@ let damage attacker defender =
     0
   else
     raw_damage
+
+let damage attacker defender =
+  let rating =
+    effectiveness attacker.ty defender.ty
+  in
+
+  damage_with_rating attacker defender rating
 
 let take_damage bokemon amount =
   let new_hp =
@@ -50,7 +53,7 @@ let take_damage bokemon amount =
     hp = final_hp;
   }
 
-  let attack attacker defender =
+let attack attacker defender =
   let amount =
     damage attacker defender
   in
@@ -61,9 +64,5 @@ let take_damage bokemon amount =
 
   (amount, updated_defender)
 
-  let is_defeated bokemon =
+let is_defeated bokemon =
   bokemon.hp <= 0
-
-
-
-
