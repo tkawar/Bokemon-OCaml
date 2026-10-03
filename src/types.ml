@@ -17,3 +17,14 @@ type bmon = {
   defense : int;
 }
 
+let string_of_bty ty =
+  match ty with
+  | Fire -> "Fire"
+  | Grass -> "Grass"
+  | Water -> "Water"
+
+let string_of_effectiveness rating =
+  match rating with
+  | SE -> "Super Effective"
+  | NVE -> "Not Very Effective"
+  | Normal -> "Normal"
