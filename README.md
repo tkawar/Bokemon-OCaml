@@ -2,6 +2,10 @@
 Creating a fake Pokemon game called Bokemon. Enjoy!
 Built based on an inspiration from a McGill COMP 302 Project.
 
+requires Dune and OCaml to run
+running instruction: 
+dune build 
+dune exec bokemon
 
 # Bokemon
 
