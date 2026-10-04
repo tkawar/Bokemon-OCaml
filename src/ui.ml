@@ -34,8 +34,9 @@ let show_main_menu player =
   print_endline "1. Battle";
   print_endline "2. View Team";
   print_endline "3. Buy B-Bucks";
-  print_endline "4. How to Play";
-  print_endline "5. Quit";
+  print_endline "4. Bokemon Center";
+  print_endline "5. How to Play";
+  print_endline "6. Quit";
   print_endline "----------------------------------------";
   print_string "> ";
   flush stdout
@@ -67,8 +68,6 @@ let rec print_bokemon_numbered bokemon_list number =
       print_bokemon_numbered
         remaining
         (number + 1)
-
-
 
 let show_rules () =
   clear_screen ();
@@ -109,4 +108,55 @@ let show_rules () =
   print_endline "Defeat 2+ levels lower: 10% of next level";
 
   pause ()
+
+let show_bokemon_center player =
+  clear_screen ();
+
+  print_endline "========================================";
+  print_endline "           BOKEMON CENTER";
+  print_endline "========================================";
+  print_endline "";
+
+  Printf.printf
+    "B-Bucks: %d\n\n"
+    player.Player.bbucks;
+
+  print_bokemon_numbered
+    player.Player.team
+    1;
+
+  print_endline "0. Back";
+  print_endline "";
+  print_string "Choose a Bokemon: ";
+  flush stdout
+
+let show_healing_options bokemon =
+  clear_screen ();
+
+  print_endline "========================================";
+  print_endline "              HEALING";
+  print_endline "========================================";
+  print_endline "";
+
+  Printf.printf
+    "%s [%s]\n"
+    bokemon.name
+    (string_of_bty bokemon.ty);
+
+  Printf.printf
+    "HP: %d/%d\n\n"
+    bokemon.hp
+    bokemon.max_hp;
+
+  print_endline "1. Half Heal     300 B-Bucks";
+  print_endline "   Adds 50% of maximum HP";
+  print_endline "";
+  print_endline "2. Full Heal     500 B-Bucks";
+  print_endline "   Restores all HP";
+  print_endline "";
+  print_endline "3. Back";
+  print_endline "";
+  print_string "> ";
+  flush stdout
+
 
