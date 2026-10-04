@@ -33,8 +33,9 @@ let show_main_menu player =
   print_endline "----------------------------------------";
   print_endline "1. Battle";
   print_endline "2. View Team";
-  print_endline "3. How to Play";
-  print_endline "4. Quit";
+  print_endline "3. Buy B-Bucks";
+  print_endline "4. How to Play";
+  print_endline "5. Quit";
   print_endline "----------------------------------------";
   print_string "> ";
   flush stdout
@@ -66,3 +67,46 @@ let rec print_bokemon_numbered bokemon_list number =
       print_bokemon_numbered
         remaining
         (number + 1)
+
+
+
+let show_rules () =
+  clear_screen ();
+
+  print_endline "========================================";
+  print_endline "             HOW TO PLAY";
+  print_endline "========================================";
+  print_endline "";
+
+  print_endline "TYPE MATCHUPS";
+  print_endline "";
+  print_endline "Fire  > Grass";
+  print_endline "Grass > Water";
+  print_endline "Water > Fire";
+  print_endline "";
+
+  print_endline "Super Effective attacks deal double strength.";
+  print_endline "Not Very Effective attacks use half strength.";
+  print_endline "Defense is subtracted from attack damage.";
+  print_endline "";
+
+  print_endline "B-BUCKS";
+  print_endline "";
+  print_endline "Regular Attack:   10 B-Bucks";
+  print_endline "Pay2Win Attack:   20 B-Bucks";
+  print_endline "Defeat an entire trainer team: +1000 B-Bucks";
+  print_endline "";
+  print_endline "B-Bucks can be purchased from the main menu";
+  print_endline "or directly during a battle.";
+  print_endline "";
+
+  print_endline "PROGRESSION";
+  print_endline "";
+  print_endline "Defeat same level:      50% of next level";
+  print_endline "Defeat 1 level higher:  75% of next level";
+  print_endline "Defeat 2+ levels higher: 100% of next level";
+  print_endline "Defeat 1 level lower:   25% of next level";
+  print_endline "Defeat 2+ levels lower: 10% of next level";
+
+  pause ()
+

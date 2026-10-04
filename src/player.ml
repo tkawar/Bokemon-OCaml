@@ -76,4 +76,15 @@ let update_bokemon
   | _ ->
       None
 
+let rec has_available_bokemon (team : bmon list) =
+  match team with
+  | [] ->
+      false
+
+  | bokemon :: remaining ->
+      if bokemon.hp > 0 then
+        true
+      else
+        has_available_bokemon remaining
+
 
