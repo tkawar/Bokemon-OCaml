@@ -66,3 +66,15 @@ let attack attacker defender =
 
 let is_defeated bokemon =
   bokemon.hp <= 0
+
+let super_effective_against ty =
+  match ty with
+  | Fire -> Grass
+  | Grass -> Water
+  | Water -> Fire
+
+let not_very_effective_against ty =
+  match ty with
+  | Fire -> Water
+  | Grass -> Fire
+  | Water -> Grass

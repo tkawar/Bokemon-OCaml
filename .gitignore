@@ -6,3 +6,5 @@ _build/
 *.cmi
 *.cmo
 bokemon
+data/save.dat
+

@@ -1,5 +1,33 @@
 open Types
 
+type battle_rules = {
+  victory_reward : int;
+  count_win : bool;
+}
+
+type championship_result =
+  | ChampionshipVictory of Player.player
+  | ChampionshipDefeat of Player.player
+  | ChampionshipQuit of Player.player
+
+let regular_battle_rules =
+  {
+    victory_reward = 1000;
+    count_win = true;
+  }
+
+let championship_stage_rules =
+  {
+    victory_reward = 0;
+    count_win = false;
+  }
+
+let championship_final_rules =
+  {
+    victory_reward = 10000;
+    count_win = true;
+  }
+
 type battle_result =
   | Victory of Player.player * bmon
   | Defeat of Player.player * bmon
@@ -149,7 +177,7 @@ let rec bbucks_store player exit_after_purchase =
       Ui.pause ();
       bbucks_store player exit_after_purchase
 
-let rec battle_loop player active enemy remaining_enemies =
+let rec battle_loop player active enemy remaining_enemies rules =
   print_status player active enemy;
 
   match read_line () with
@@ -160,6 +188,7 @@ let rec battle_loop player active enemy remaining_enemies =
         enemy
         remaining_enemies
         Battle.Regular
+        rules
 
   | "2" ->
       player_attack
@@ -168,6 +197,7 @@ let rec battle_loop player active enemy remaining_enemies =
         enemy
         remaining_enemies
         Battle.Pay2Win
+        rules
 
   | "3" ->
       switch_bokemon
@@ -175,13 +205,14 @@ let rec battle_loop player active enemy remaining_enemies =
         active
         enemy
         remaining_enemies
+        rules
 
   | "4" ->
       let updated_player =
         bbucks_store player true 
       in
 
-      battle_loop updated_player active enemy remaining_enemies
+      battle_loop updated_player active enemy remaining_enemies rules
 
 
   | "5" ->
@@ -199,13 +230,15 @@ let rec battle_loop player active enemy remaining_enemies =
         active
         enemy
         remaining_enemies
+        rules
 
 and player_attack
     player
     active
     enemy
     remaining_enemies
-    mode =
+    mode 
+    rules =
 
   try
     let updated_player, updated_enemy, amount =
@@ -276,21 +309,30 @@ and player_attack
               progressed_bokemon
               next_enemy
               rest
+              rules
 
         | [] ->
             let winning_player =
-              Player.add_bbucks
+                if rules.victory_reward > 0 then
+                    Player.add_bbucks
+                        player_with_progress
+                        1000
+                else 
                 player_with_progress
-                1000
             in
 
             let winning_player =
-              Player.add_win winning_player
+                if rules.count_win then 
+                    Player.add_win winning_player
+                else 
+                    winning_player
             in
 
             print_endline "";
             print_endline "The opposing trainer has no Bokemon left!";
             print_endline "Victory!";
+            if rules.victory_reward > 0 then 
+                Printf.printf "+%d B-Bucks \n" rules.victory_reward;
             print_endline "+1000 B-Bucks";
 
             Victory
@@ -298,11 +340,12 @@ and player_attack
       end
 
     else
-      enemy_turn
-        updated_player
-        active
-        updated_enemy
-        remaining_enemies
+        enemy_turn
+            updated_player
+            active
+            updated_enemy
+            remaining_enemies
+            rules
 
   with
   | Player.BuyMoreBBucks ->
@@ -322,12 +365,14 @@ and player_attack
         active
         enemy
         remaining_enemies
+        rules
 
 and enemy_turn
     player
     active
     enemy
-    remaining_enemies =
+    remaining_enemies 
+    rules =
 
   let amount, updated_active =
     Combat.attack enemy active
@@ -363,6 +408,7 @@ and enemy_turn
           updated_active
           enemy
           remaining_enemies
+          rules
       else
         begin
           print_endline "";
@@ -383,12 +429,14 @@ and enemy_turn
       updated_active
       enemy
       remaining_enemies
+      rules
 
 and switch_bokemon
     player
     active
     enemy
-    remaining_enemies =
+    remaining_enemies 
+    rules =
 
   let updated_player =
     Player.update_bokemon
@@ -428,6 +476,7 @@ and switch_bokemon
         active
         enemy
         remaining_enemies
+        rules
 
   | Some position ->
       begin
@@ -447,6 +496,7 @@ and switch_bokemon
               active
               enemy
               remaining_enemies
+              rules
 
         | Some selected ->
             if selected.name = active.name then
@@ -461,6 +511,7 @@ and switch_bokemon
                   active
                   enemy
                   remaining_enemies
+                  rules
               end
 
             else if Combat.is_defeated selected then
@@ -476,6 +527,7 @@ and switch_bokemon
                   active
                   enemy
                   remaining_enemies
+                  rules
               end
 
             else
@@ -493,6 +545,7 @@ and switch_bokemon
                   selected
                   enemy
                   remaining_enemies
+                  rules
               end
       end
 
@@ -500,7 +553,8 @@ and forced_switch
     player
     defeated
     enemy
-    remaining_enemies =
+    remaining_enemies 
+    rules =
 
   Ui.clear_screen ();
 
@@ -534,6 +588,7 @@ and forced_switch
         defeated
         enemy
         remaining_enemies
+        rules
 
   | Some position ->
       begin
@@ -553,6 +608,7 @@ and forced_switch
               defeated
               enemy
               remaining_enemies
+              rules
 
         | Some selected ->
             if Combat.is_defeated selected then
@@ -568,6 +624,7 @@ and forced_switch
                   defeated
                   enemy
                   remaining_enemies
+                  rules
               end
             else
               begin
@@ -582,10 +639,16 @@ and forced_switch
                   selected
                   enemy
                   remaining_enemies
+                  rules
               end
       end
 
-let start_battle player active trainer =
+let start_battle_with_rules
+    player
+    active
+    trainer
+    rules =
+
   match trainer.Enemies.team with
   | [] ->
       failwith "Enemy trainer has no Bokemon."
@@ -596,6 +659,117 @@ let start_battle player active trainer =
         active
         first_enemy
         remaining_enemies
+        rules
+
+let start_battle player active trainer =
+  start_battle_with_rules
+    player
+    active
+    trainer
+    regular_battle_rules
+
+let rec championship_trainers
+    player
+    active
+    trainers
+    original_team =
+
+  match trainers with
+  | [] ->
+      Ui.clear_screen ();
+
+      print_endline "========================================";
+      print_endline "              FINAL ROUND";
+      print_endline "========================================";
+      print_endline "";
+      print_endline "Champion Cassian steps forward.";
+      print_endline "";
+
+      Ui.pause ();
+
+      begin
+        match
+          start_battle_with_rules
+            player
+            active
+            Enemies.champion
+            championship_final_rules
+        with
+        | Victory (winning_player, _) ->
+            ChampionshipVictory winning_player
+
+        | Defeat (updated_player, _) ->
+            let restored_player =
+              Player.replace_team
+                updated_player
+                original_team
+            in
+
+            ChampionshipDefeat restored_player
+
+        | Quit (updated_player, _) ->
+            let restored_player =
+              Player.replace_team
+                updated_player
+                original_team
+            in
+
+            ChampionshipQuit restored_player
+      end
+
+  | trainer :: remaining_trainers ->
+      Ui.clear_screen ();
+
+      Printf.printf
+        "Next opponent: %s\n"
+        trainer.Enemies.trainer_name;
+
+      Ui.pause ();
+
+      begin
+        match
+          start_battle_with_rules
+            player
+            active
+            trainer
+            championship_stage_rules
+        with
+        | Victory (updated_player, surviving_bokemon) ->
+            championship_trainers
+              updated_player
+              surviving_bokemon
+              remaining_trainers
+              original_team
+
+        | Defeat (updated_player, _) ->
+            let restored_player =
+              Player.replace_team
+                updated_player
+                original_team
+            in
+
+            ChampionshipDefeat restored_player
+
+        | Quit (updated_player, _) ->
+            let restored_player =
+              Player.replace_team
+                updated_player
+                original_team
+            in
+
+            ChampionshipQuit restored_player
+      end
+
+let start_championship player active =
+  let original_team =
+    player.Player.team
+  in
+
+  championship_trainers
+    player
+    active
+    Enemies.trainers
+    original_team
 
 let rec choose_bokemon player =
   Ui.clear_screen ();
@@ -646,17 +820,48 @@ let rec choose_bokemon player =
               bokemon
       end
 
-let show_team player =
-  Ui.clear_screen ();
+let rec view_team player =
+  Ui.show_team_menu player;
 
-  print_endline "========================================";
-  print_endline "               YOUR TEAM";
-  print_endline "========================================";
-  print_endline "";
+  let input =
+    read_line ()
+  in
 
-  Ui.print_bokemon_numbered player.Player.team 1;
+  match int_of_string_opt input with
+  | None ->
+      print_endline "Please enter a valid number.";
+      Ui.pause ();
+      view_team player
 
-  Ui.pause ()
+  | Some 0 ->
+      ()
+
+  | Some position ->
+      begin
+        match
+          Player.bokemon_at_position
+            player.Player.team
+            position
+        with
+        | None ->
+            print_endline
+              "That Bokemon does not exist.";
+
+            Ui.pause ();
+            view_team player
+
+        | Some bokemon ->
+            Ui.show_bokemon_details bokemon;
+
+            begin
+              match read_line () with
+              | "0" ->
+                  view_team player
+
+              | _ ->
+                  view_team player
+            end
+      end
 
 let rec print_enemy_team active team =
   match team with
@@ -675,29 +880,44 @@ let rec print_enemy_team active team =
         active
         remaining
 
-let rec print_trainers active trainers number =
+let rec print_trainers player active trainers number =
   match trainers with
   | [] ->
       ()
 
   | (trainer : Enemies.trainer) :: remaining ->
-      Printf.printf
-        "%d. %s\n"
-        number
-        trainer.trainer_name;
+      if Unlocks.trainer_unlocked player trainer then
+        begin
+          Printf.printf
+            "%d. %s [UNLOCKED]\n"
+            number
+            trainer.trainer_name;
 
-      print_enemy_team
-        active
-        trainer.team;
+          print_enemy_team
+            active
+            trainer.team;
 
-      print_endline "";
+          print_endline ""
+        end
+      else
+        begin
+          Printf.printf
+            "%d. %s [LOCKED]\n"
+            number
+            trainer.trainer_name;
+
+          Printf.printf
+            "   Requires Trainer Level %d\n\n"
+            trainer.unlock_level
+        end;
 
       print_trainers
+        player
         active
         remaining
         (number + 1)
 
-let rec choose_trainer active =
+let rec choose_trainer player active =
   Ui.clear_screen ();
 
   print_endline "========================================";
@@ -710,6 +930,7 @@ let rec choose_trainer active =
     active.level;
 
   print_trainers
+    player
     active
     Enemies.trainers
     1;
@@ -725,7 +946,7 @@ let rec choose_trainer active =
   | None ->
       print_endline "Please enter a valid number.";
       Ui.pause ();
-      choose_trainer active
+      choose_trainer player active
 
   | Some position ->
       begin
@@ -739,10 +960,27 @@ let rec choose_trainer active =
               "That trainer does not exist.";
 
             Ui.pause ();
-            choose_trainer active
+            choose_trainer player active
 
         | Some trainer ->
-            trainer
+            if Unlocks.trainer_unlocked player trainer then
+                trainer
+            else
+                begin
+                    Printf.printf
+                        "\n%s is locked.\n"
+                        trainer.trainer_name;
+
+                    Printf.printf
+                        "Reach Trainer Level %d to challenge them.\n"
+                        trainer.unlock_level;
+
+                    Ui.pause ();
+
+                    choose_trainer
+                        player
+                        active
+                end
       end
 
 let rec heal_bokemon_menu player bokemon =
@@ -912,6 +1150,7 @@ let rec bokemon_center player =
       end
 
 let rec main_menu player =
+  Save.save_game player;
   Ui.show_main_menu player;
 
   match read_line () with
@@ -921,7 +1160,7 @@ let rec main_menu player =
     in
 
     let trainer =
-      choose_trainer active_bokemon
+      choose_trainer player active_bokemon
     in
 
     Ui.clear_screen ();
@@ -943,7 +1182,34 @@ let rec main_menu player =
         match result with
         | Victory (updated_player, _) ->
             Ui.pause ();
-            main_menu updated_player 
+
+            let old_level =
+                updated_player.Player.trainer_level
+                in
+
+            let trainer_xp =
+                trainer.Enemies.trainer_xp_reward
+            in
+
+            let progressed_player =
+                Player.add_trainer_xp
+                    updated_player
+                    trainer_xp
+            in
+
+            let progressed_player, unlocked =
+                Unlocks.apply_unlocks
+                    progressed_player
+            in
+
+            Ui.show_trainer_progress
+                old_level
+                progressed_player
+                trainer_xp
+                unlocked;
+
+            main_menu progressed_player
+
 
         | Defeat (updated_player, _) ->
             Ui.pause ();
@@ -954,7 +1220,7 @@ let rec main_menu player =
       end
 
   | "2" ->
-      show_team player;
+      view_team player;
       main_menu player 
 
   | "3" ->
@@ -968,19 +1234,140 @@ let rec main_menu player =
       let updated_player =
         bokemon_center player 
       in
-      
+
       main_menu updated_player 
 
   | "5" ->
+    if not (Unlocks.championship_unlocked player) then
+      begin
+        print_endline "";
+        print_endline "The Bokemon Championship is locked.";
+        print_endline "Unlock every Bokemon to enter.";
+
+        Ui.pause ();
+        main_menu player
+      end
+
+    else if not (Ui.confirm_championship ()) then
+      main_menu player
+
+    else
+      let active_bokemon =
+        choose_bokemon player
+      in
+
+      begin
+        match
+          start_championship
+            player
+            active_bokemon
+        with
+        | ChampionshipVictory updated_player ->
+            Ui.clear_screen ();
+
+            print_endline "========================================";
+            print_endline "         BOKEMON CHAMPION!";
+            print_endline "========================================";
+            print_endline "";
+            print_endline "You defeated every trainer";
+            print_endline "and Champion Cassian.";
+            print_endline "";
+            print_endline "+10,000 B-Bucks";
+            print_endline "";
+
+            Printf.printf
+              "Final B-Bucks: %d\n"
+              updated_player.Player.bbucks;
+
+            Ui.pause ();
+
+            main_menu updated_player
+
+        | ChampionshipDefeat updated_player ->
+            Ui.clear_screen ();
+
+            print_endline "========================================";
+            print_endline "       CHAMPIONSHIP FAILED";
+            print_endline "========================================";
+            print_endline "";
+            print_endline "Your team has been restored.";
+            print_endline "B-Bucks spent during the run remain spent.";
+
+            Ui.pause ();
+
+            main_menu updated_player
+
+        | ChampionshipQuit updated_player ->
+            Ui.clear_screen ();
+
+            print_endline "Championship abandoned.";
+            print_endline "Your team has been restored.";
+
+            Ui.pause ();
+
+            main_menu updated_player
+      end
+
+  | "6" ->
       Ui.show_rules ();
       main_menu player 
 
-  | "6" ->
+  | "7" ->
       Ui.clear_screen ();
       print_endline "Thanks for playing Bokemon!"
 
   | _ ->
       main_menu player 
+
+let rec start () =
+  let has_save =
+    Save.save_exists ()
+  in
+
+  Ui.show_start_menu has_save;
+
+  match read_line () with
+  | "1" ->
+      if has_save
+         && not (Ui.confirm_new_game ())
+      then
+        start ()
+      else
+        begin
+          let trainer_name =
+            Ui.ask_trainer_name ()
+          in
+
+          let player =
+            Player.create_player
+              trainer_name
+              Bokemon_data.starting_team
+          in
+
+          main_menu player
+        end
+
+  | "2" ->
+      begin
+        match Save.load_game () with
+        | Some player ->
+            main_menu player
+
+        | None ->
+            print_endline "";
+            print_endline
+              "No valid saved game was found.";
+
+            Ui.pause ();
+            start ()
+      end
+
+  | "3" ->
+      Ui.clear_screen ();
+      print_endline "Thanks for playing Bokemon!"
+
+  | _ ->
+      start ()
 
 
 
