@@ -87,4 +87,30 @@ let rec has_available_bokemon (team : bmon list) =
       else
         has_available_bokemon remaining
 
+let half_heal (bokemon : bmon) =
+  let heal_amount =
+    (bokemon.max_hp + 1) / 2
+  in
+
+  let new_hp =
+    bokemon.hp + heal_amount
+  in
+
+  let final_hp =
+    if new_hp > bokemon.max_hp then
+      bokemon.max_hp
+    else
+      new_hp
+  in
+
+  {
+    bokemon with
+    hp = final_hp;
+  }
+
+let full_heal (bokemon : bmon) =
+  {
+    bokemon with
+    hp = bokemon.max_hp;
+  }
 

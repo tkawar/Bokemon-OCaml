@@ -745,6 +745,172 @@ let rec choose_trainer active =
             trainer
       end
 
+let rec heal_bokemon_menu player bokemon =
+  Ui.show_healing_options bokemon;
+
+  match read_line () with
+  | "1" ->
+      if bokemon.hp = bokemon.max_hp then
+        begin
+          print_endline "";
+          print_endline "This Bokemon is already at full HP.";
+          Ui.pause ();
+          player
+        end
+      else
+        begin
+          try
+            let updated_player =
+              Player.spend_bbucks player 300
+            in
+
+            let healed_bokemon =
+              Player.half_heal bokemon
+            in
+
+            let updated_player =
+              Player.update_bokemon
+                updated_player
+                healed_bokemon
+            in
+
+            print_endline "";
+
+            Printf.printf
+              "%s was healed from %d/%d HP to %d/%d HP.\n"
+              bokemon.name
+              bokemon.hp
+              bokemon.max_hp
+              healed_bokemon.hp
+              healed_bokemon.max_hp;
+
+            print_endline "-300 B-Bucks";
+
+            Printf.printf
+              "Balance: %d B-Bucks\n"
+              updated_player.Player.bbucks;
+
+            Ui.pause ();
+            updated_player
+
+          with
+          | Player.BuyMoreBBucks ->
+              print_endline "";
+              print_endline "Not enough B-Bucks!";
+              print_endline "Half Heal costs 300 B-Bucks.";
+
+              Printf.printf
+                "Your balance: %d B-Bucks\n"
+                player.Player.bbucks;
+
+              Ui.pause ();
+              player
+        end
+
+  | "2" ->
+      if bokemon.hp = bokemon.max_hp then
+        begin
+          print_endline "";
+          print_endline "This Bokemon is already at full HP.";
+          Ui.pause ();
+          player
+        end
+      else
+        begin
+          try
+            let updated_player =
+              Player.spend_bbucks player 500
+            in
+
+            let healed_bokemon =
+              Player.full_heal bokemon
+            in
+
+            let updated_player =
+              Player.update_bokemon
+                updated_player
+                healed_bokemon
+            in
+
+            print_endline "";
+
+            Printf.printf
+              "%s was fully healed from %d/%d HP to %d/%d HP.\n"
+              bokemon.name
+              bokemon.hp
+              bokemon.max_hp
+              healed_bokemon.hp
+              healed_bokemon.max_hp;
+
+            print_endline "-500 B-Bucks";
+
+            Printf.printf
+              "Balance: %d B-Bucks\n"
+              updated_player.Player.bbucks;
+
+            Ui.pause ();
+            updated_player
+
+          with
+          | Player.BuyMoreBBucks ->
+              print_endline "";
+              print_endline "Not enough B-Bucks!";
+              print_endline "Full Heal costs 500 B-Bucks.";
+
+              Printf.printf
+                "Your balance: %d B-Bucks\n"
+                player.Player.bbucks;
+
+              Ui.pause ();
+              player
+        end
+
+  | "3" ->
+      player
+
+  | _ ->
+      print_endline "Invalid choice.";
+      Ui.pause ();
+      heal_bokemon_menu player bokemon
+
+let rec bokemon_center player =
+  Ui.show_bokemon_center player;
+
+  let input =
+    read_line ()
+  in
+
+  match int_of_string_opt input with
+  | None ->
+      print_endline "Please enter a valid number.";
+      Ui.pause ();
+      bokemon_center player
+
+  | Some 0 ->
+      player
+
+  | Some position ->
+      begin
+        match
+          Player.bokemon_at_position
+            player.Player.team
+            position
+        with
+        | None ->
+            print_endline "That Bokemon does not exist.";
+            Ui.pause ();
+            bokemon_center player
+
+        | Some bokemon ->
+            let updated_player =
+              heal_bokemon_menu
+                player
+                bokemon
+            in
+
+            bokemon_center updated_player
+      end
+
 let rec main_menu player =
   Ui.show_main_menu player;
 
@@ -799,10 +965,17 @@ let rec main_menu player =
       main_menu updated_player
 
   | "4" ->
+      let updated_player =
+        bokemon_center player 
+      in
+      
+      main_menu updated_player 
+
+  | "5" ->
       Ui.show_rules ();
       main_menu player 
 
-  | "5" ->
+  | "6" ->
       Ui.clear_screen ();
       print_endline "Thanks for playing Bokemon!"
 
