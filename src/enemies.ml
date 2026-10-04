@@ -84,27 +84,61 @@ let pyroclaw =
     xp = 0;
   }
 
-let roster =
+type trainer = {
+  trainer_name : string;
+  team : bmon list;
+}
+
+let rookie_nia =
+  {
+    trainer_name = "Rookie Nia";
+    team =
+      [
+        emberimp;
+        dewfin;
+      ];
+  }
+
+let ranger_finn =
+  {
+    trainer_name = "Ranger Finn";
+    team =
+      [
+        thornlet;
+        cinderfang;
+      ];
+  }
+
+let captain_mira =
+  {
+    trainer_name = "Captain Mira";
+    team =
+      [
+        riptide;
+        bramblehorn;
+        pyroclaw;
+      ];
+  }
+
+let trainers =
   [
-    emberimp;
-    dewfin;
-    thornlet;
-    cinderfang;
-    riptide;
-    bramblehorn;
-    pyroclaw;
+    rookie_nia;
+    ranger_finn;
+    captain_mira;
   ]
 
-let rec enemy_at_position enemies position =
-  match enemies, position with
+let rec trainer_at_position
+    (trainers : trainer list)
+    position =
+  match trainers, position with
   | [], _ ->
       None
 
-  | enemy :: _, 1 ->
-      Some enemy
+  | trainer :: _, 1 ->
+      Some trainer
 
   | _ :: remaining, n when n > 1 ->
-      enemy_at_position remaining (n - 1)
+      trainer_at_position remaining (n - 1)
 
   | _ ->
       None

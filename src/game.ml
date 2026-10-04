@@ -40,7 +40,8 @@ let print_status player active enemy =
   print_endline "1. Attack          [10 B-Bucks]";
   print_endline "2. Pay2Win Attack  [20 B-Bucks]";
   print_endline "3. Switch Bokemon ";
-  print_endline "4. Quit Battle";
+  print_endline "4. Buy B-Bucks";
+  print_endline "5. Quit Battle";
   print_endline "";
   print_string "> ";
   flush stdout
@@ -61,58 +62,151 @@ let difficulty_label active enemy =
   else
     "VERY EASY"
 
-let rec print_enemy_roster active enemies number =
-  match enemies with
-  | [] ->
-      ()
+let rec bbucks_store player exit_after_purchase =
+  Ui.clear_screen ();
 
-  | (enemy : bmon) :: remaining ->
-      Printf.printf
-        "%d. %s [%s] - Level %d\n"
-        number
-        enemy.name
-        (string_of_bty enemy.ty)
-        enemy.level;
+  print_endline "========================================";
+  print_endline "            B-BUCKS STORE";
+  print_endline "========================================";
+  print_endline "";
 
-      Printf.printf
-        "   HP %d | STR %d | DEF %d | %s\n"
-        enemy.max_hp
-        enemy.strength
-        enemy.defense
-        (difficulty_label active enemy);
+  Printf.printf
+    "Current Balance: %d B-Bucks\n"
+    player.Player.bbucks;
+
+  print_endline "";
+  print_endline "1. Tiny Sack       +100 B-Bucks";
+  print_endline "2. Gamer Bundle    +500 B-Bucks";
+  print_endline "3. Whale Package   +5000 B-Bucks";
+  print_endline "4. Back";
+  print_endline "";
+  print_string "> ";
+  flush stdout;
+
+  match read_line () with
+  | "1" ->
+      let updated_player =
+        Player.add_bbucks player 100
+      in
 
       print_endline "";
+      print_endline "Thank you for supporting Mintendo!";
+      print_endline "+100 B-Bucks";
 
-      print_enemy_roster
-        active
-        remaining
-        (number + 1)
+      Printf.printf
+        "New Balance: %d B-Bucks\n"
+        updated_player.Player.bbucks;
 
-let rec battle_loop player active enemy =
+      Ui.pause ();
+      if exit_after_purchase then 
+        updated_player 
+      else 
+        bbucks_store updated_player false
+
+  | "2" ->
+      let updated_player =
+        Player.add_bbucks player 500
+      in
+
+      print_endline "";
+      print_endline "Thank you for supporting Mintendo!";
+      print_endline "+500 B-Bucks";
+
+      Printf.printf
+        "New Balance: %d B-Bucks\n"
+        updated_player.Player.bbucks;
+
+      Ui.pause ();
+      if exit_after_purchase then 
+        updated_player 
+      else 
+        bbucks_store updated_player false
+
+  | "3" ->
+      let updated_player =
+        Player.add_bbucks player 5000
+      in
+
+      print_endline "";
+      print_endline "Whale status achieved.";
+      print_endline "+5000 B-Bucks";
+
+      Printf.printf
+        "New Balance: %d B-Bucks\n"
+        updated_player.Player.bbucks;
+
+      Ui.pause ();
+      if exit_after_purchase then 
+        updated_player 
+      else 
+        bbucks_store updated_player false
+
+  | "4" ->
+      player
+
+  | _ ->
+      print_endline "Invalid choice.";
+      Ui.pause ();
+      bbucks_store player exit_after_purchase
+
+let rec battle_loop player active enemy remaining_enemies =
   print_status player active enemy;
 
   match read_line () with
   | "1" ->
-      player_attack player active enemy Battle.Regular
+      player_attack
+        player
+        active
+        enemy
+        remaining_enemies
+        Battle.Regular
 
   | "2" ->
-      player_attack player active enemy Battle.Pay2Win
+      player_attack
+        player
+        active
+        enemy
+        remaining_enemies
+        Battle.Pay2Win
 
-  | "3" -> 
-      switch_bokemon player active enemy
+  | "3" ->
+      switch_bokemon
+        player
+        active
+        enemy
+        remaining_enemies
 
   | "4" ->
-    let updated_player =
-      Player.update_bokemon player active
-    in
+      let updated_player =
+        bbucks_store player true 
+      in
 
-    Quit (updated_player, active)
+      battle_loop updated_player active enemy remaining_enemies
+
+
+  | "5" ->
+      let updated_player =
+        Player.update_bokemon player active
+      in
+
+      Quit (updated_player, active)
 
   | _ ->
       print_endline "Invalid choice.";
-      battle_loop player active enemy
 
-and player_attack player active enemy mode =
+      battle_loop
+        player
+        active
+        enemy
+        remaining_enemies
+
+and player_attack
+    player
+    active
+    enemy
+    remaining_enemies
+    mode =
+
   try
     let updated_player, updated_enemy, amount =
       Battle.perform_attack
@@ -131,51 +225,110 @@ and player_attack player active enemy mode =
       amount;
 
     if Combat.is_defeated updated_enemy then
-        let xp_gained = 
-            Progression.xp_reward active updated_enemy
-        in 
+      let xp_gained =
+        Progression.xp_reward
+          active
+          updated_enemy
+      in
 
-        let progressed_bokemon =
-            Progression.add_xp active xp_gained
-        in
+      let progressed_bokemon =
+        Progression.add_xp
+          active
+          xp_gained
+      in
 
-        let winning_player =
-            Player.add_win updated_player
-        in
+      let player_with_progress =
+        Player.update_bokemon
+          updated_player
+          progressed_bokemon
+      in
 
-        let winning_player =
-            Player.update_bokemon winning_player progressed_bokemon
-        in
+      begin
+        print_endline "";
 
-        begin
+        Printf.printf
+          "%s was defeated!\n"
+          updated_enemy.name;
+
+        Printf.printf
+          "%s gained %d XP!\n"
+          progressed_bokemon.name
+          xp_gained;
+
+        if progressed_bokemon.level > active.level then
+          Printf.printf
+            "%s reached Level %d!\n"
+            progressed_bokemon.name
+            progressed_bokemon.level;
+
+        match remaining_enemies with
+        | next_enemy :: rest ->
             print_endline "";
-            Printf.printf "%s was defeated!\n" updated_enemy.name;
+
+            Printf.printf
+              "The opposing trainer sends out %s!\n"
+              next_enemy.name;
+
+            Ui.pause ();
+
+            battle_loop
+              player_with_progress
+              progressed_bokemon
+              next_enemy
+              rest
+
+        | [] ->
+            let winning_player =
+              Player.add_bbucks
+                player_with_progress
+                1000
+            in
+
+            let winning_player =
+              Player.add_win winning_player
+            in
+
+            print_endline "";
+            print_endline "The opposing trainer has no Bokemon left!";
             print_endline "Victory!";
             print_endline "+1000 B-Bucks";
 
-            Printf.printf 
-                "+%d XP for %s\n" 
-                xp_gained
-                progressed_bokemon.name;
-            
-            if progressed_bokemon.level > active.level then 
-                Printf.printf
-                    "%s reached Level %d!\n" 
-                    progressed_bokemon.name
-                    progressed_bokemon.level;
+            Victory
+              (winning_player, progressed_bokemon)
+      end
 
-            Victory (winning_player, progressed_bokemon)
-        end
     else
-      enemy_turn updated_player active updated_enemy
+      enemy_turn
+        updated_player
+        active
+        updated_enemy
+        remaining_enemies
 
   with
   | Player.BuyMoreBBucks ->
       print_endline "";
       print_endline "Not enough B-Bucks!";
-      battle_loop player active enemy
+      print_endline "";
+      print_endline "Redirecting you to the B-Bucks Store...";
 
-and enemy_turn player active enemy =
+      Ui.pause ();
+
+      let updated_player = 
+        bbucks_store player true
+      in 
+
+      battle_loop
+        updated_player
+        active
+        enemy
+        remaining_enemies
+
+and enemy_turn
+    player
+    active
+    enemy
+    remaining_enemies =
+
   let amount, updated_active =
     Combat.attack enemy active
   in
@@ -190,22 +343,57 @@ and enemy_turn player active enemy =
 
   if Combat.is_defeated updated_active then
     let updated_player =
-        Player.update_bokemon player updated_active
+      Player.update_bokemon
+        player
+        updated_active
     in
 
     begin
-        print_endline "";
-        Printf.printf "%s was defeated!\n" updated_active.name;
-        print_endline "You lost the battle.";
+      print_endline "";
 
-        Defeat (updated_player, updated_active)
+      Printf.printf
+        "%s was defeated!\n"
+        updated_active.name;
+
+      if Player.has_available_bokemon
+           updated_player.Player.team
+      then
+        forced_switch
+          updated_player
+          updated_active
+          enemy
+          remaining_enemies
+      else
+        begin
+          print_endline "";
+          print_endline
+            "All of your Bokemon have been defeated!";
+
+          print_endline
+            "You lost the battle.";
+
+          Defeat
+            (updated_player, updated_active)
+        end
     end
-  else
-    battle_loop player updated_active enemy
 
-and switch_bokemon player active enemy =
+  else
+    battle_loop
+      player
+      updated_active
+      enemy
+      remaining_enemies
+
+and switch_bokemon
+    player
+    active
+    enemy
+    remaining_enemies =
+
   let updated_player =
-    Player.update_bokemon player active
+    Player.update_bokemon
+      player
+      active
   in
 
   Ui.clear_screen ();
@@ -234,7 +422,12 @@ and switch_bokemon player active enemy =
   | None ->
       print_endline "Please enter a valid number.";
       Ui.pause ();
-      switch_bokemon updated_player active enemy
+
+      switch_bokemon
+        updated_player
+        active
+        enemy
+        remaining_enemies
 
   | Some position ->
       begin
@@ -244,16 +437,30 @@ and switch_bokemon player active enemy =
             position
         with
         | None ->
-            print_endline "That Bokemon does not exist.";
+            print_endline
+              "That Bokemon does not exist.";
+
             Ui.pause ();
-            switch_bokemon updated_player active enemy
+
+            switch_bokemon
+              updated_player
+              active
+              enemy
+              remaining_enemies
 
         | Some selected ->
             if selected.name = active.name then
               begin
-                print_endline "That Bokemon is already active.";
+                print_endline
+                  "That Bokemon is already active.";
+
                 Ui.pause ();
-                switch_bokemon updated_player active enemy
+
+                switch_bokemon
+                  updated_player
+                  active
+                  enemy
+                  remaining_enemies
               end
 
             else if Combat.is_defeated selected then
@@ -263,7 +470,12 @@ and switch_bokemon player active enemy =
                   selected.name;
 
                 Ui.pause ();
-                switch_bokemon updated_player active enemy
+
+                switch_bokemon
+                  updated_player
+                  active
+                  enemy
+                  remaining_enemies
               end
 
             else
@@ -280,13 +492,110 @@ and switch_bokemon player active enemy =
                   updated_player
                   selected
                   enemy
+                  remaining_enemies
               end
       end
 
-let start_battle player active enemy =
-  battle_loop player active enemy
+and forced_switch
+    player
+    defeated
+    enemy
+    remaining_enemies =
 
+  Ui.clear_screen ();
 
+  print_endline "========================================";
+  print_endline "          CHOOSE NEXT BOKEMON";
+  print_endline "========================================";
+  print_endline "";
+
+  Printf.printf
+    "%s has been defeated!\n\n"
+    defeated.name;
+
+  Ui.print_bokemon_numbered
+    player.Player.team
+    1;
+
+  print_string "Choose a Bokemon: ";
+  flush stdout;
+
+  let input =
+    read_line ()
+  in
+
+  match int_of_string_opt input with
+  | None ->
+      print_endline "Please enter a valid number.";
+      Ui.pause ();
+
+      forced_switch
+        player
+        defeated
+        enemy
+        remaining_enemies
+
+  | Some position ->
+      begin
+        match
+          Player.bokemon_at_position
+            player.Player.team
+            position
+        with
+        | None ->
+            print_endline
+              "That Bokemon does not exist.";
+
+            Ui.pause ();
+
+            forced_switch
+              player
+              defeated
+              enemy
+              remaining_enemies
+
+        | Some selected ->
+            if Combat.is_defeated selected then
+              begin
+                Printf.printf
+                  "%s is defeated and cannot battle.\n"
+                  selected.name;
+
+                Ui.pause ();
+
+                forced_switch
+                  player
+                  defeated
+                  enemy
+                  remaining_enemies
+              end
+            else
+              begin
+                Printf.printf
+                  "\n%s enters the battle!\n"
+                  selected.name;
+
+                Ui.pause ();
+
+                battle_loop
+                  player
+                  selected
+                  enemy
+                  remaining_enemies
+              end
+      end
+
+let start_battle player active trainer =
+  match trainer.Enemies.team with
+  | [] ->
+      failwith "Enemy trainer has no Bokemon."
+
+  | first_enemy :: remaining_enemies ->
+      battle_loop
+        player
+        active
+        first_enemy
+        remaining_enemies
 
 let rec choose_bokemon player =
   Ui.clear_screen ();
@@ -337,7 +646,6 @@ let rec choose_bokemon player =
               bokemon
       end
 
-
 let show_team player =
   Ui.clear_screen ();
 
@@ -350,65 +658,63 @@ let show_team player =
 
   Ui.pause ()
 
-let show_rules () =
+let rec print_enemy_team active team =
+  match team with
+  | [] ->
+      ()
+
+  | (enemy : bmon) :: remaining ->
+      Printf.printf
+        "      %s [%s] | LVL %d | %s\n"
+        enemy.name
+        (string_of_bty enemy.ty)
+        enemy.level
+        (difficulty_label active enemy);
+
+      print_enemy_team
+        active
+        remaining
+
+let rec print_trainers active trainers number =
+  match trainers with
+  | [] ->
+      ()
+
+  | (trainer : Enemies.trainer) :: remaining ->
+      Printf.printf
+        "%d. %s\n"
+        number
+        trainer.trainer_name;
+
+      print_enemy_team
+        active
+        trainer.team;
+
+      print_endline "";
+
+      print_trainers
+        active
+        remaining
+        (number + 1)
+
+let rec choose_trainer active =
   Ui.clear_screen ();
 
   print_endline "========================================";
-  print_endline "             HOW TO PLAY";
-  print_endline "========================================";
-  print_endline "";
-
-  print_endline "TYPE MATCHUPS";
-  print_endline "";
-  print_endline "Fire  > Grass";
-  print_endline "Grass > Water";
-  print_endline "Water > Fire";
-  print_endline "";
-
-  print_endline "Super Effective attacks deal double strength.";
-  print_endline "Not Very Effective attacks use half strength.";
-  print_endline "Defense is subtracted from attack damage.";
-  print_endline "";
-
-  print_endline "B-BUCKS";
-  print_endline "";
-  print_endline "Regular Attack:   10 B-Bucks";
-  print_endline "Pay2Win Attack:   20 B-Bucks";
-  print_endline "Victory Reward: +1000 B-Bucks";
-  print_endline "";
-
-  print_endline "PROGRESSION";
-  print_endline "";
-  print_endline "Defeat same level:      50% of next level";
-  print_endline "Defeat 1 level higher:  75% of next level";
-  print_endline "Defeat 2+ levels higher: 100% of next level";
-  print_endline "Defeat 1 level lower:   25% of next level";
-  print_endline "Defeat 2+ levels lower: 10% of next level";
-
-  Ui.pause ()
-
-
-
-let rec choose_enemy active =
-  Ui.clear_screen ();
-
-  print_endline "========================================";
-  print_endline "           CHOOSE AN OPPONENT";
+  print_endline "          CHOOSE A TRAINER";
   print_endline "========================================";
 
   Printf.printf
-    "Your Bokemon: %s | Level %d\n"
+    "Your Bokemon: %s | Level %d\n\n"
     active.name
     active.level;
 
-  print_endline "";
-
-  print_enemy_roster
+  print_trainers
     active
-    Enemies.roster
+    Enemies.trainers
     1;
 
-  print_string "Choose an opponent: ";
+  print_string "Choose a trainer: ";
   flush stdout;
 
   let input =
@@ -419,22 +725,24 @@ let rec choose_enemy active =
   | None ->
       print_endline "Please enter a valid number.";
       Ui.pause ();
-      choose_enemy active
+      choose_trainer active
 
   | Some position ->
       begin
         match
-          Enemies.enemy_at_position
-            Enemies.roster
+          Enemies.trainer_at_position
+            Enemies.trainers
             position
         with
         | None ->
-            print_endline "That opponent does not exist.";
-            Ui.pause ();
-            choose_enemy active
+            print_endline
+              "That trainer does not exist.";
 
-        | Some enemy ->
-            enemy
+            Ui.pause ();
+            choose_trainer active
+
+        | Some trainer ->
+            trainer
       end
 
 let rec main_menu player =
@@ -446,17 +754,23 @@ let rec main_menu player =
       choose_bokemon player
     in
 
-    let enemy =
-      choose_enemy active_bokemon
+    let trainer =
+      choose_trainer active_bokemon
     in
 
     Ui.clear_screen ();
+
+    Printf.printf
+    "You challenged %s!\n"
+    trainer.Enemies.trainer_name;
+
+    Ui.pause ();
 
     let result =
       start_battle
         player
         active_bokemon
-        enemy
+        trainer
     in
 
       begin
@@ -478,10 +792,17 @@ let rec main_menu player =
       main_menu player 
 
   | "3" ->
-      show_rules ();
-      main_menu player 
+      let updated_player = 
+        bbucks_store player false
+      in
+
+      main_menu updated_player
 
   | "4" ->
+      Ui.show_rules ();
+      main_menu player 
+
+  | "5" ->
       Ui.clear_screen ();
       print_endline "Thanks for playing Bokemon!"
 

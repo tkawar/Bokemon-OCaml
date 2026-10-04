@@ -34,11 +34,4 @@ let perform_attack player attacker defender mode =
     Combat.take_damage defender amount
   in
 
-  let updated_player =
-    if Combat.is_defeated updated_defender then
-      Player.add_bbucks player_after_payment 1000
-    else
-      player_after_payment
-  in
-
-  (updated_player, updated_defender, amount)
+  (player_after_payment, updated_defender, amount)
