@@ -1,5 +1,5 @@
 build:
-	ocamlc -I src  -o bokemon src/types.ml src/combat.ml src/player.ml src/battle.ml src/main.ml 
+	ocamlc -I src  -o bokemon src/types.ml src/combat.ml src/player.ml src/battle.ml src/progression.ml src/enemies.ml src/ui.ml src/game.ml src/main.ml 
 
 run: build
 	./bokemon

@@ -45,36 +45,9 @@ let starting_team =
 
 let () =
   let player =
-    Player.create_player "Husam" starting_team
+    Player.create_player
+      "Husam"
+      starting_team
   in
 
-  Printf.printf
-    "Starting B-Bucks: %d\n\n"
-    player.Player.bbucks;
-
-  let player, aquaphin_after, amount =
-    Battle.perform_attack
-      player
-      flarecub
-      aquaphin
-      Battle.Pay2Win
-  in
-
-  Printf.printf
-    "%s uses Pay2Win against %s.\n"
-    flarecub.name
-    aquaphin.name;
-
-  Printf.printf
-    "Damage dealt: %d\n"
-    amount;
-
-  Printf.printf
-    "%s HP: %d/%d\n"
-    aquaphin_after.name
-    aquaphin_after.hp
-    aquaphin_after.max_hp;
-
-  Printf.printf
-    "B-Bucks remaining: %d\n"
-    player.Player.bbucks
+  Game.main_menu player 
