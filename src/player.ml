@@ -5,6 +5,8 @@ type player = {
   bbucks : int;
   team : bmon list;
   wins : int;
+  trainer_level : int;
+  trainer_xp : int;
 }
 
 exception BuyMoreBBucks
@@ -15,6 +17,8 @@ let create_player name team =
     bbucks = 100;
     team = team;
     wins = 0;
+    trainer_level = 1;
+    trainer_xp = 0
   }
 
 let add_bbucks player amount =
@@ -113,4 +117,86 @@ let full_heal (bokemon : bmon) =
     bokemon with
     hp = bokemon.max_hp;
   }
+
+let trainer_xp_required (player : player) =
+  player.trainer_level * 100
+
+let rec add_trainer_xp (player : player) amount =
+  let total_xp =
+    player.trainer_xp + amount
+  in
+
+  let required =
+    trainer_xp_required player
+  in
+
+  if total_xp >= required then
+    let remaining_xp =
+      total_xp - required
+    in
+
+    let leveled_player =
+      {
+        player with
+        trainer_level = player.trainer_level + 1;
+        trainer_xp = 0;
+      }
+    in
+
+    add_trainer_xp
+      leveled_player
+      remaining_xp
+  else
+    {
+      player with
+      trainer_xp = total_xp;
+    }
+
+let rec team_contains_name
+    (team : bmon list)
+    target_name =
+  match team with
+  | [] ->
+      false
+
+  | bokemon :: remaining ->
+      if bokemon.name = target_name then
+        true
+      else
+        team_contains_name
+          remaining
+          target_name
+
+let rec append_bokemon
+    (team : bmon list)
+    (new_bokemon : bmon) =
+  match team with
+  | [] ->
+      [new_bokemon]
+
+  | bokemon :: remaining ->
+      bokemon
+      :: append_bokemon
+           remaining
+           new_bokemon
+
+let add_bokemon
+    (player : player)
+    (new_bokemon : bmon) =
+  {
+    player with
+    team =
+      append_bokemon
+        player.team
+        new_bokemon;
+  }
+
+let replace_team
+    (player : player)
+    (team : bmon list) =
+  {
+    player with
+    team = team;
+  }
+
 

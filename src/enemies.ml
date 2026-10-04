@@ -84,9 +84,83 @@ let pyroclaw =
     xp = 0;
   }
 
+let solarfang =
+  {
+    name = "Solarfang";
+    ty = Fire;
+    hp = 130;
+    max_hp = 130;
+    strength = 30;
+    defense = 20;
+    level = 6;
+    xp = 0;
+  }
+
+let tidewarden =
+  {
+    name = "Tidewarden";
+    ty = Water;
+    hp = 140;
+    max_hp = 140;
+    strength = 29;
+    defense = 22;
+    level = 6;
+    xp = 0;
+  }
+
+let verdantusk =
+  {
+    name = "Verdantusk";
+    ty = Grass;
+    hp = 150;
+    max_hp = 150;
+    strength = 30;
+    defense = 23;
+    level = 7;
+    xp = 0;
+  }
+
+let blazewing =
+  {
+    name = "Blazewing";
+    ty = Fire;
+    hp = 145;
+    max_hp = 145;
+    strength = 33;
+    defense = 22;
+    level = 7;
+    xp = 0;
+  }
+
+let abyssfin =
+  {
+    name = "Abyssfin";
+    ty = Water;
+    hp = 160;
+    max_hp = 160;
+    strength = 34;
+    defense = 24;
+    level = 8;
+    xp = 0;
+  }
+
+let crownthorn =
+  {
+    name = "Crownthorn";
+    ty = Grass;
+    hp = 175;
+    max_hp = 175;
+    strength = 36;
+    defense = 27;
+    level = 9;
+    xp = 0;
+  }
+
 type trainer = {
   trainer_name : string;
   team : bmon list;
+  trainer_xp_reward : int;
+  unlock_level : int;
 }
 
 let rookie_nia =
@@ -97,6 +171,8 @@ let rookie_nia =
         emberimp;
         dewfin;
       ];
+    trainer_xp_reward = 100;
+    unlock_level = 1;
   }
 
 let ranger_finn =
@@ -107,6 +183,8 @@ let ranger_finn =
         thornlet;
         cinderfang;
       ];
+    trainer_xp_reward = 200;
+    unlock_level = 3;
   }
 
 let captain_mira =
@@ -118,6 +196,8 @@ let captain_mira =
         bramblehorn;
         pyroclaw;
       ];
+    trainer_xp_reward = 300;
+    unlock_level = 7; 
   }
 
 let trainers =
@@ -142,3 +222,24 @@ let rec trainer_at_position
 
   | _ ->
       None
+
+
+
+let champion =
+  {
+    trainer_name = "Champion Cassian";
+    team =
+      [
+        solarfang;
+        tidewarden;
+        verdantusk;
+        blazewing;
+        abyssfin;
+        crownthorn;
+      ];
+    trainer_xp_reward = 0;
+    unlock_level = 0;
+  }
+
+
+  
