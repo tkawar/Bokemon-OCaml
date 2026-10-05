@@ -1,60 +1,122 @@
-# Bokemon-OCaml
-Creating a fake Pokemon game called Bokemon. Enjoy!
-Built based on an inspiration from a McGill COMP 302 Project.
-
-requires Dune and OCaml to run
-running instruction: 
-dune build 
-dune exec bokemon
-
 # Bokemon
 
-Bokemon is a terminal-based monster battling game written in OCaml.
+Bokemon is a terminal-based monster-battling game written in OCaml.
 
-The project is inspired by a functional programming exercise and has been expanded into a complete game featuring elemental combat, teams, B-Bucks, pay-to-win attacks, recursive menus, and a terminal user interface.
+It features turn-based combat, elemental matchups, Bokemon and trainer progression, an in-game currency system, unlockable content, persistent saves, and a final Championship gauntlet.
 
-## Core Rules
+The project was built with a functional programming focus and intentionally avoids `for` and `while` loops, using recursion and pattern matching instead.
 
-Bokemon can have one of three elemental types:
+## Features
 
-- Fire
-- Grass
-- Water
+- Fire, Grass, and Water type matchups
+- Team-based turn combat
+- Bokemon XP and levelling
+- Trainer XP and progression
+- Unlockable trainers and Bokemon
+- B-Bucks economy and healing system
+- Persistent save/load
+- Final Championship gauntlet
+- No `for` or `while` loops
 
-Elemental effectiveness follows:
+## Gameplay
 
-- Fire is super effective against Grass
-- Grass is super effective against Water
-- Water is super effective against Fire
-- Attacks against the same type are Normal
-- Attacks in the opposite direction are Not Very Effective
+You begin with:
 
-Damage is calculated using:
+- Flarecub, Fire
+- Mossling, Grass
+- Aquaphin, Water
 
-- Super Effective: strength × 2
-- Normal: strength
-- Not Very Effective: strength / 2
-- Defender defense is then subtracted
-- Damage cannot be less than 0
+Type effectiveness follows:
 
-## B-Bucks
+```text
+Fire > Grass
+Grass > Water
+Water > Fire
+```
 
-- Normal attack: 10 B-Bucks
-- Pay2Win attack: 20 B-Bucks
-- Pay2Win forces an attack to be Super Effective
-- Defeating an enemy rewards 1000 B-Bucks
+Regular attacks cost 10 B-Bucks. Pay2Win attacks cost 20 B-Bucks and force a Super Effective attack.
 
-## Programming Constraint
+Defeating trainers earns B-Bucks and Trainer XP, while individual Bokemon gain XP and improve their stats as they level up.
 
-The game does not use `for` loops or `while` loops.
+Progression unlocks stronger opponents and new Bokemon until the Championship becomes available.
 
-Repeated behaviour is implemented using recursion and pattern matching.
+## Championship
+
+Once every Bokemon is unlocked, the player enters one continuous final gauntlet:
+
+```text
+Rookie Nia
+↓
+Ranger Finn
+↓
+Captain Mira
+↓
+Ace Layla
+↓
+Trainer Husam
+↓
+Champion Cassian
+```
+
+HP carries between battles, defeated Bokemon remain defeated, and there is no Bokemon Center between rounds.
+
+Winning the Championship rewards **10,000 B-Bucks**.
 
 ## Project Structure
 
 ```text
-src/      Core OCaml source code
-data/     Game data
-scripts/  Utility scripts
-tests/    Automated tests
-docs/     Documentation
+src/
+├── types.ml
+├── bokemon_data.ml
+├── combat.ml
+├── player.ml
+├── save.ml
+├── battle.ml
+├── progression.ml
+├── enemies.ml
+├── unlocks.ml
+├── ui.ml
+├── game.ml
+└── main.ml
+```
+
+The project separates combat, progression, persistence, UI, game data, and overall game flow into independent modules.
+
+## Running
+
+Requires OCaml 5.x.
+
+```bash
+make build
+make run
+```
+
+To remove compiled files:
+
+```bash
+make clean
+```
+
+No third-party OCaml libraries are required.
+
+## Technical Focus
+
+Bokemon uses:
+
+- Recursion
+- Pattern matching
+- Algebraic data types
+- Records
+- Immutable updates
+- Recursive list processing
+- Modules
+- Exceptions
+- File persistence
+
+Menus, battles, progression, unlocks, and the Championship are implemented recursively without imperative loops.
+
+## Status
+
+Feature-complete.
+
+Bokemon is an independent educational and portfolio project inspired by the monster-battling game genre and is not affiliated with Nintendo, Game Freak, or The Pokémon Company.
