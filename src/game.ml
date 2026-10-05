@@ -178,6 +178,9 @@ let rec bbucks_store player exit_after_purchase =
       bbucks_store player exit_after_purchase
 
 let rec battle_loop player active enemy remaining_enemies rules =
+
+  Ui.clear_screen ();
+
   print_status player active enemy;
 
   match read_line () with
@@ -248,6 +251,12 @@ and player_attack
         enemy
         mode
     in
+    Ui.clear_screen ();
+
+    print_endline "========================================";
+    print_endline "              YOUR TURN";
+    print_endline "========================================";
+    print_endline "";
 
     print_endline "";
 
@@ -378,6 +387,12 @@ and enemy_turn
     Combat.attack enemy active
   in
 
+  Ui.clear_screen ();
+
+  print_endline "========================================";
+  print_endline "              ENEMY TURN";
+  print_endline "========================================";
+  print_endline ""; 
   print_endline "";
 
   Printf.printf
@@ -399,6 +414,8 @@ and enemy_turn
       Printf.printf
         "%s was defeated!\n"
         updated_active.name;
+
+      Ui.pause ();
 
       if Player.has_available_bokemon
            updated_player.Player.team

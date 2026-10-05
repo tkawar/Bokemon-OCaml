@@ -156,6 +156,115 @@ let crownthorn =
     xp = 0;
   }
 
+let ashfang =
+  {
+    name = "Ashfang";
+    ty = Fire;
+    hp = 125;
+    max_hp = 125;
+    strength = 31;
+    defense = 20;
+    level = 4;
+    xp = 0;
+  }
+
+let waveclaw =
+  {
+    name = "Waveclaw";
+    ty = Water;
+    hp = 130;
+    max_hp = 130;
+    strength = 31;
+    defense = 21;
+    level = 4;
+    xp = 0;
+  }
+
+let thornmane =
+  {
+    name = "Thornmane";
+    ty = Grass;
+    hp = 135;
+    max_hp = 135;
+    strength = 32;
+    defense = 22;
+    level = 4;
+    xp = 0;
+  }
+
+let emberhorn =
+  {
+    name = "Emberhorn";
+    ty = Fire;
+    hp = 140;
+    max_hp = 140;
+    strength = 33;
+    defense = 23;
+    level = 4;
+    xp = 0;
+  }
+
+let infernox =
+  {
+    name = "Infernox";
+    ty = Fire;
+    hp = 145;
+    max_hp = 145;
+    strength = 34;
+    defense = 23;
+    level = 5;
+    xp = 0;
+  }
+
+let hydrofang =
+  {
+    name = "Hydrofang";
+    ty = Water;
+    hp = 150;
+    max_hp = 150;
+    strength = 35;
+    defense = 24;
+    level = 5;
+    xp = 0;
+  }
+
+let ironvine =
+  {
+    name = "Ironvine";
+    ty = Grass;
+    hp = 155;
+    max_hp = 155;
+    strength = 34;
+    defense = 26;
+    level = 5;
+    xp = 0;
+  }
+
+let volcanis =
+  {
+    name = "Volcanis";
+    ty = Fire;
+    hp = 160;
+    max_hp = 160;
+    strength = 36;
+    defense = 25;
+    level = 5;
+    xp = 0;
+  }
+
+let leviaphin =
+  {
+    name = "Leviaphin";
+    ty = Water;
+    hp = 165;
+    max_hp = 165;
+    strength = 37;
+    defense = 26;
+    level = 5;
+    xp = 0;
+  }
+
+
 type trainer = {
   trainer_name : string;
   team : bmon list;
@@ -200,11 +309,42 @@ let captain_mira =
     unlock_level = 7; 
   }
 
+let ace_layla =
+  {
+    trainer_name = "Ace Layla";
+    team =
+      [
+        ashfang;
+        waveclaw;
+        thornmane;
+        emberhorn;
+      ];
+    trainer_xp_reward = 400;
+    unlock_level = 12;
+  }
+
+let trainer_husam =
+  {
+    trainer_name = "Trainer Husam";
+    team =
+      [
+        infernox;
+        hydrofang;
+        ironvine;
+        volcanis;
+        leviaphin;
+      ];
+    trainer_xp_reward = 500;
+    unlock_level = 14;
+  }
+
 let trainers =
   [
     rookie_nia;
     ranger_finn;
     captain_mira;
+    ace_layla;
+    trainer_husam;
   ]
 
 let rec trainer_at_position
@@ -242,4 +382,3 @@ let champion =
   }
 
 
-  
