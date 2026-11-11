@@ -296,9 +296,9 @@ let ranger_finn =
     unlock_level = 3;
   }
 
-let captain_mira =
+let captain_jake =
   {
-    trainer_name = "Captain Mira";
+    trainer_name = "Captain Jake";
     team =
       [
         riptide;
@@ -309,9 +309,9 @@ let captain_mira =
     unlock_level = 7; 
   }
 
-let ace_layla =
+let ace_mira =
   {
-    trainer_name = "Ace Layla";
+    trainer_name = "Ace Mira";
     team =
       [
         ashfang;
@@ -342,8 +342,8 @@ let trainers =
   [
     rookie_nia;
     ranger_finn;
-    captain_mira;
-    ace_layla;
+    captain_jake;
+    ace_mira;
     trainer_husam;
   ]
 

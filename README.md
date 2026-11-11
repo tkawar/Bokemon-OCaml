@@ -1,60 +1,138 @@
-# Bokemon-OCaml
-Creating a fake Pokemon game called Bokemon. Enjoy!
-Built based on an inspiration from a McGill COMP 302 Project.
-
-requires Dune and OCaml to run
-running instruction: 
-dune build 
-dune exec bokemon
-
 # Bokemon
 
-Bokemon is a terminal-based monster battling game written in OCaml.
+Bokemon is a terminal-based monster-battling game written in OCaml.
 
-The project is inspired by a functional programming exercise and has been expanded into a complete game featuring elemental combat, teams, B-Bucks, pay-to-win attacks, recursive menus, and a terminal user interface.
+Originally inspired by a McGill COMP 302 functional programming exercise, the project was expanded into a complete game with turn-based combat, progression, unlockable content, persistent saves, and a final Championship gauntlet.
 
-## Core Rules
+A key constraint is that the game does not use `for` or `while` loops. Repeated behaviour is implemented using recursion and pattern matching.
 
-Bokemon can have one of three elemental types:
+## Running the Game
 
-- Fire
-- Grass
-- Water
+Requires OCaml 5.x.
 
-Elemental effectiveness follows:
+Run:
 
-- Fire is super effective against Grass
-- Grass is super effective against Water
-- Water is super effective against Fire
-- Attacks against the same type are Normal
-- Attacks in the opposite direction are Not Very Effective
+```bash
+make run
+```
 
-Damage is calculated using:
+When finished:
 
-- Super Effective: strength × 2
-- Normal: strength
-- Not Very Effective: strength / 2
-- Defender defense is then subtracted
-- Damage cannot be less than 0
+```bash
+make clean
+```
 
-## B-Bucks
+No third-party OCaml libraries are required.
 
-- Normal attack: 10 B-Bucks
-- Pay2Win attack: 20 B-Bucks
-- Pay2Win forces an attack to be Super Effective
-- Defeating an enemy rewards 1000 B-Bucks
+## Features
 
-## Programming Constraint
+- Fire, Grass, and Water type matchups
+- Team-based turn combat
+- Bokemon XP and levelling
+- Trainer XP and progression
+- Unlockable trainers and Bokemon
+- B-Bucks currency and healing
+- Pay2Win attacks
+- Persistent save/load
+- Final Championship gauntlet
+- Recursive game flow with no imperative loops
 
-The game does not use `for` loops or `while` loops.
+## Gameplay
 
-Repeated behaviour is implemented using recursion and pattern matching.
+You begin with three Bokemon:
+
+- Flarecub, Fire
+- Mossling, Grass
+- Aquaphin, Water
+
+Type effectiveness follows:
+
+```text
+Fire > Grass
+Grass > Water
+Water > Fire
+```
+
+Regular attacks cost **10 B-Bucks**.
+
+Pay2Win attacks cost **20 B-Bucks** and force the attack to be Super Effective.
+
+Defeating trainers earns B-Bucks and Trainer XP, while individual Bokemon gain XP and improve their stats as they level up.
+
+## Progression
+
+```text
+Level 1   Rookie Nia
+Level 3   Ranger Finn
+Level 5   Stormfin
+Level 7   Captain Jake
+Level 10  Pyrelion
+Level 12  Ace Mira
+Level 14  Trainer Husam
+Level 15  Ironbloom
+```
+
+Once every Bokemon is unlocked, the Championship becomes available.
+
+## Championship
+
+The final challenge is one continuous gauntlet:
+
+```text
+Rookie Nia
+↓
+Ranger Finn
+↓
+Captain Jake
+↓
+Ace Mira
+↓
+Trainer Husam
+↓
+Champion Cassian
+```
+
+HP carries between battles, defeated Bokemon remain defeated, and the Bokemon Center cannot be used between rounds.
+
+Winning the Championship rewards **10,000 B-Bucks**.
 
 ## Project Structure
 
 ```text
-src/      Core OCaml source code
-data/     Game data
-scripts/  Utility scripts
-tests/    Automated tests
-docs/     Documentation
+src/
+├── types.ml
+├── bokemon_data.ml
+├── combat.ml
+├── player.ml
+├── save.ml
+├── battle.ml
+├── progression.ml
+├── enemies.ml
+├── unlocks.ml
+├── ui.ml
+├── game.ml
+└── main.ml
+```
+
+The codebase separates combat, player state, progression, persistence, enemies, unlocks, UI, and overall game flow into independent modules.
+
+## Technical Focus
+
+The project makes extensive use of:
+
+- Recursion
+- Pattern matching
+- Algebraic data types
+- Records
+- Immutable updates
+- Recursive list processing
+- Modules
+- Exceptions
+- File persistence
+
+
+## Status
+
+Feature-complete.
+
+Bokemon is an independent educational and portfolio project inspired by the monster-battling game genre. It is not affiliated with Nintendo, Game Freak, The Pokémon Company, or any related products or trademarks.
